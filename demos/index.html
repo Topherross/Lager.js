@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../src/lager.js"></script>
+    <title>Lager JS Tests</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+            border: none 0;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: auto;
+            min-height: 100%;
+            position: relative;
+        }
+
+        html {
+
+        }
+
+        body {
+            background: rgb(223, 223, 223);
+        }
+
+        form {
+            overflow: auto;
+            position: relative;
+            margin: 10px auto 20px;
+            width: 320px;
+        }
+
+        input, select, textarea {
+            -moz-appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
+            outline: none;
+            float: left;
+            clear: left;
+            position: relative;
+            margin: 4px 0 10px;
+            padding: 6px 12px;
+            background: rgb(203, 203, 203);
+            border-radius: 3px;
+            box-sizing: border-box;
+            border: rgb(163, 163, 163) 1px solid;
+        }
+
+        input:focus {
+            border-color: rgb(47, 91, 255);
+        }
+
+        label {
+            float: left;
+            clear: left;
+        }
+
+        input#id_birth_day,
+        input#id_birth_year {
+            clear: none;
+        }
+
+        input[type="radio"] {
+            -moz-appearance: radio;
+            -webkit-appearance: radio;
+            appearance: radio;
+        }
+
+        input[type="checkbox"] {
+            -moz-appearance: checkbox;
+            -webkit-appearance: checkbox;
+            appearance: checkbox;
+        }
+
+        input[type="radio"] + label,
+        input[type="checkbox"] + label {
+            clear: none;
+            padding: 4px 0 10px 10px;
+        }
+    </style>
+</head>
+<body>
+<form action="" method="post" id="contactForm">
+    <input type="hidden" id="token" name="token" value="aWPW1234567Ika1230845tgECViHmTDoIJ">
+
+    <label>Birth Date</label>
+    <input id="id_birth_month" name="birth_month" placeholder="MM" maxlength="2" min="01" max="12"
+           type="number"/>
+    <input id="id_birth_day" name="birth_day" placeholder="DD" maxlength="2" min="01" max="31" type="number"/>
+    <input id="id_birth_year" name="birth_year" placeholder="YYYY" maxlength="4" min="1900" max="2015"
+           type="number"/>
+
+
+    <label for="id_email">Email</label>
+    <input id="id_email" name="email" placeholder="Email" type="text"/>
+
+    <label for="id_phone_number">Phone Number</label>
+    <input id="id_phone_number" name="email" placeholder="Phone Number" type="text"/>
+
+    <label for="id_postal_code">Postal Code</label>
+    <input id="id_postal_code" name="email" placeholder="Postal Code" type="text"/>
+
+    <label for="gender_m">
+        <input type="radio" name="gender" id="gender_m" value="M"/> Male
+    </label>
+
+    <label for="gender_f">
+        <input type="radio" name="gender" id="gender_f" value="F"/> Female
+    </label>
+
+    <label for="optin_email">
+        <input type="checkbox" name="optin_email" id="optin_email" value="1" checked="checked"/> Sign up for email
+        alerts
+    </label>
+
+    <label for="optin_phone">
+        <input type="checkbox" name="optin_phone" id="optin_phone" value="1"/> Sign up for text alerts
+    </label>
+
+    <label for="optin_rewards">
+        <input type="checkbox" name="optin_rewards" id="optin_rewards" value="1"/> Sign up for our rewards program
+    </label>
+
+    <div class="submitWrap">
+        <input type="submit" value="Submit"/>
+        <input type="button" id="view_records" value="View Records"/>
+    </div>
+</form>
+<div id="output_target"></div>
+<script type="text/javascript">
+    (function () {
+        'use strict';
+
+        const DB_NAME = 'stash_entries';
+        const DB_VERSION = 2;
+        const DB_STORE_NAME = 'entries';
+
+        var form = document.querySelector('form'),
+            output = document.querySelector('#output_target'),
+            view_records = document.querySelector('#view_records'),
+            $lager =  Object.create(Lager);
+
+        $lager.create(DB_NAME, DB_VERSION, DB_STORE_NAME);
+
+        if(form !== null) {
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                var data = {};
+
+                for (var i = 0; i < form.elements.length; i++) {
+                    var type = form.elements[i].type.toLowerCase();
+
+                    if (typeof form.elements[i].type === "undefined" ||
+                            (type === "submit" || type === "reset" || type === "button")) {
+                        continue;
+                    }
+
+                    if ((type === "radio" || type === "checkbox")) {
+                        if (!form.elements[i].checked) {
+                            data[form.elements[i].name] = "";
+                        } else {
+                            data[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+                        }
+                    } else if (type === "select-multiple") {
+                        for (var selection = 0; selection < form.elements[i].children.length; selection++) {
+                            if (form.elements[i].children[selection].selected) {
+                                data[form.elements[i].name] = encodeURIComponent(form.elements[i].children[selection].value);
+                            }
+                        }
+                    } else {
+                        data[form.elements[i].name] = encodeURIComponent(form.elements[i].value);
+                    }
+                }
+
+                $lager.insert(DB_STORE_NAME, data);
+
+            }, false);
+        }
+
+        if(output !== null && view_records !== null) {
+            view_records.addEventListener('click', function () {
+                console.log('Clicked View Records.');
+                output.innerHTML = $lager.getAll(DB_STORE_NAME);
+                console.log($lager.getAll(DB_STORE_NAME));
+            }, false);
+        }
+    })();
+</script>
+</body>
+</html>
