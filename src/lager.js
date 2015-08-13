@@ -16,18 +16,18 @@
         create: function (database_name, database_version, store_name) {
             window.console.log("Creating DB…");
 
-            var req = iDB.open(database_name, parseInt(database_version, 10));
+            var tx = iDB.open(database_name, parseInt(database_version, 10));
 
-            req.onsuccess = function (event) {
+            tx.onsuccess = function (event) {
                 this.db = event.target.result;
                 window.console.log("DB Created!");
             }.bind(this);
 
-            req.onerror = function () {
+            tx.onerror = function () {
                 window.console.error("Request Error:", this.errorCode);
             };
 
-            req.onupgradeneeded = function (event) {
+            tx.onupgradeneeded = function (event) {
                 window.console.log("Upgrade Needed");
                 event.target.result.createObjectStore(store_name, {keyPath: 'id', autoIncrement: true});
             };
@@ -38,10 +38,10 @@
         insert: function (store_name, data) {
 
             var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
-                req;
+                tx;
 
             try {
-                req = store.add(data);
+                tx = store.add(data);
             } catch (e) {
                 if (e.name === 'DataCloneError') {
                     window.console.error("This engine doesn't know how to clone a Blob.");
@@ -49,11 +49,11 @@
                 throw e;
             }
 
-            req.onsuccess = function () {
+            tx.onsuccess = function () {
                 window.console.log("Insertion into " + store_name + " successful");
             };
 
-            req.onerror = function () {
+            tx.onerror = function () {
                 window.console.error("Add Record Error: ", this.error);
             };
 
@@ -62,10 +62,10 @@
 
         getById: function (store_name, key, callback) {
             var store = this.db.transaction(store_name, 'readonly').objectStore(store_name),
-                req = store.get(parseInt(key, 10)),
+                tx = store.get(parseInt(key, 10)),
                 record;
 
-            req.onsuccess = function () {
+            tx.onsuccess = function () {
                 record = this.result;
 
                 if (undefined === record) {
@@ -77,7 +77,7 @@
                 }
             };
 
-            req.onerror = function () {
+            tx.onerror = function () {
                 window.console.error("getByKey:", this.errorCode);
             };
 
@@ -86,11 +86,11 @@
 
         getAll: function (store_name, callback) {
             var store = this.db.transaction(store_name, 'readonly').objectStore(store_name),
-                req = store.openCursor(),
+                tx = store.openCursor(),
                 records = [],
                 cursor;
 
-            req.onsuccess = function () {
+            tx.onsuccess = function () {
                 cursor = this.result;
 
                 if (!cursor) {
@@ -104,7 +104,7 @@
                 cursor.continue();
             };
 
-            req.onerror = function () {
+            tx.onerror = function () {
                 window.console.error("getAll:", this.errorCode);
             };
 
@@ -113,9 +113,9 @@
 
         deleteAll: function (store_name, callback) {
             var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
-                req = store.clear();
+                tx = store.clear();
 
-            req.onsuccess = function () {
+            tx.onsuccess = function () {
                 window.console.log('All Records Deleted.');
 
                 if (typeof callback === "function") {
@@ -123,7 +123,7 @@
                 }
             };
 
-            req.onerror = function () {
+            tx.onerror = function () {
                 window.console.error("deleteAll:", this.errorCode);
             };
 
@@ -132,11 +132,11 @@
 
         deleteById: function (store_name, key, callback) {
             var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
-                req = store.get(parseInt(key, 10)),
+                tx = store.get(parseInt(key, 10)),
                 message,
                 record;
 
-            req.onsuccess = function () {
+            tx.onsuccess = function () {
                 record = this.result;
 
                 if (undefined === record) {
@@ -150,9 +150,9 @@
 
                 window.console.log('Record: ' + key + ' found.');
 
-                req = store.delete(parseInt(key, 10));
+                tx = store.delete(parseInt(key, 10));
 
-                req.onsuccess = function () {
+                tx.onsuccess = function () {
                     message = 'Record: ' + key + ' deleted.';
 
                     if (typeof callback === "function") {
@@ -160,7 +160,7 @@
                     }
                 };
 
-                req.onerror = function () {
+                tx.onerror = function () {
                     message = "ERROR: deletePublication:" + this.errorCode;
 
                     if (typeof callback === "function") {
@@ -169,7 +169,7 @@
                 };
             };
 
-            req.onerror = function () {
+            tx.onerror = function () {
                 message = "ERROR: deleteById:" + this.errorCode;
 
                 if (typeof callback === "function") {
