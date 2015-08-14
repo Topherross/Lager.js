@@ -5,6 +5,9 @@
 (function (window) {
     'use strict';
 
+    /**
+     * @var iDB = indexedDB
+     */
     var iDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
     //iDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction,
     //iDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange,
@@ -14,22 +17,41 @@
         db: null,
 
         create: function (database_name, database_version, store_name) {
-            window.console.log("Creating DB…");
+            window.console.log('Creating DB…');
 
             var tx = iDB.open(database_name, parseInt(database_version, 10));
 
             tx.onsuccess = function (event) {
                 this.db = event.target.result;
-                window.console.log("DB Created!");
+                window.console.log('DB Created!');
             }.bind(this);
 
             tx.onerror = function () {
-                window.console.error("Request Error:", this.errorCode);
+                window.console.error('Request Error:', this.errorCode);
             };
 
             tx.onupgradeneeded = function (event) {
-                window.console.log("Upgrade Needed");
+                window.console.log('Upgrade Needed');
                 event.target.result.createObjectStore(store_name, {keyPath: 'id', autoIncrement: true});
+            };
+
+            return this;
+        },
+
+        destroy: function (database_name) {
+            var tx = iDB.deleteDatabase(database_name);
+
+            tx.onsuccess = function () {
+                this.db = null;
+                window.console.log('Deleted database: ' + database_name + ' successfully');
+            }.bind(this);
+
+            tx.onerror = function () {
+                window.console.error('Could not delete database: ' + database_name);
+            };
+
+            tx.onblocked = function () {
+                window.console.warn('Could not delete database: ' + database_name + ' due to the operation being blocked.');
             };
 
             return this;
@@ -44,17 +66,17 @@
                 tx = store.add(data);
             } catch (e) {
                 if (e.name === 'DataCloneError') {
-                    window.console.error("This engine doesn't know how to clone a Blob.");
+                    window.console.error('This engine does not know how to clone a Blob.');
                 }
                 throw e;
             }
 
             tx.onsuccess = function () {
-                window.console.log("Insertion into " + store_name + " successful");
+                window.console.log('Insertion into ' + store_name + ' successful');
             };
 
             tx.onerror = function () {
-                window.console.error("Add Record Error: ", this.error);
+                window.console.error('Add Record Error: ', this.error);
             };
 
             return this;
@@ -72,13 +94,13 @@
                     record = 'Record: ' + key + ' not found.';
                 }
 
-                if (typeof callback === "function") {
+                if (typeof callback === 'function') {
                     callback(record);
                 }
             };
 
             tx.onerror = function () {
-                window.console.error("getByKey:", this.errorCode);
+                window.console.error('getByKey:', this.errorCode);
             };
 
             return this;
@@ -94,7 +116,7 @@
                 cursor = this.result;
 
                 if (!cursor) {
-                    if (typeof callback === "function") {
+                    if (typeof callback === 'function') {
                         callback(records);
                     }
                     return;
@@ -105,7 +127,7 @@
             };
 
             tx.onerror = function () {
-                window.console.error("getAll:", this.errorCode);
+                window.console.error('getAll:', this.errorCode);
             };
 
             return this;
@@ -118,13 +140,13 @@
             tx.onsuccess = function () {
                 window.console.log('All Records Deleted.');
 
-                if (typeof callback === "function") {
+                if (typeof callback === 'function') {
                     callback();
                 }
             };
 
             tx.onerror = function () {
-                window.console.error("deleteAll:", this.errorCode);
+                window.console.error('deleteAll:', this.errorCode);
             };
 
             return this;
@@ -142,7 +164,7 @@
                 if (undefined === record) {
                     message = 'Record: ' + key + ' not found.';
 
-                    if (typeof callback === "function") {
+                    if (typeof callback === 'function') {
                         callback(message);
                     }
                     return;
@@ -155,24 +177,24 @@
                 tx.onsuccess = function () {
                     message = 'Record: ' + key + ' deleted.';
 
-                    if (typeof callback === "function") {
+                    if (typeof callback === 'function') {
                         callback(message);
                     }
                 };
 
                 tx.onerror = function () {
-                    message = "ERROR: deletePublication:" + this.errorCode;
+                    message = 'ERROR: deletePublication:' + this.errorCode;
 
-                    if (typeof callback === "function") {
+                    if (typeof callback === 'function') {
                         callback(message);
                     }
                 };
             };
 
             tx.onerror = function () {
-                message = "ERROR: deleteById:" + this.errorCode;
+                message = 'ERROR: deleteById:' + this.errorCode;
 
-                if (typeof callback === "function") {
+                if (typeof callback === 'function') {
                     callback(message);
                 }
             };
@@ -181,7 +203,7 @@
         }
     };
 
-    if (typeof module === "object" && typeof module.exports === "object") {
+    if (typeof module === 'object' && typeof module.exports === 'object') {
         module.exports = Lager;
     } else {
         window.Lager = Lager;
