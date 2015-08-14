@@ -16,7 +16,7 @@
     Lager = {
         db: null,
 
-        create: function (database_name, database_version, store_name) {
+        createDB: function (database_name, database_version, store_name) {
             window.console.log('Creating DB…');
 
             var tx = iDB.open(database_name, parseInt(database_version, 10));
@@ -38,7 +38,7 @@
             return this;
         },
 
-        destroy: function (database_name) {
+        destroyDB: function (database_name) {
             var tx = iDB.deleteDatabase(database_name);
 
             tx.onsuccess = function () {
@@ -57,7 +57,7 @@
             return this;
         },
 
-        insert: function (store_name, data) {
+        insertRecord: function (store_name, data) {
 
             var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
                 tx;
@@ -82,7 +82,7 @@
             return this;
         },
 
-        getById: function (store_name, key, callback) {
+        getRecordById: function (store_name, key, callback) {
             var store = this.db.transaction(store_name, 'readonly').objectStore(store_name),
                 tx = store.get(parseInt(key, 10)),
                 record;
@@ -106,7 +106,7 @@
             return this;
         },
 
-        getAll: function (store_name, callback) {
+        getAllRecords: function (store_name, callback) {
             var store = this.db.transaction(store_name, 'readonly').objectStore(store_name),
                 tx = store.openCursor(),
                 records = [],
@@ -133,26 +133,33 @@
             return this;
         },
 
-        deleteAll: function (store_name, callback) {
+        deleteAllRecords: function (store_name, callback) {
             var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
-                tx = store.clear();
+                tx = store.clear(),
+                message;
 
             tx.onsuccess = function () {
-                window.console.log('All Records Deleted.');
+                message = 'All Records Deleted.';
+                window.console.log(message);
 
                 if (typeof callback === 'function') {
-                    callback();
+                    callback(message);
                 }
             };
 
             tx.onerror = function () {
-                window.console.error('deleteAll:', this.errorCode);
+                message = 'deleteAll:'+ this.errorCode;
+                window.console.error(message);
+
+                if (typeof callback === 'function') {
+                    callback(message);
+                }
             };
 
             return this;
         },
 
-        deleteById: function (store_name, key, callback) {
+        deleteRecordById: function (store_name, key, callback) {
             var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
                 tx = store.get(parseInt(key, 10)),
                 message,

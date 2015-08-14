@@ -443,7 +443,7 @@
         <div id="output_target"></div>
     </div>
 
-    <form action="" method="post" id="contactForm" class="page-state default-state" data-state="form">
+    <form action="" method="post" id="contact_form" class="page-state default-state" data-state="form">
         <h1>Registration Form</h1>
         <input type="hidden" id="token" name="token" value="aWPW1234567Ika1230845tgECViHmTDoIJ">
 
@@ -511,7 +511,7 @@
         const DB_STORE_NAME = 'entries';
 
         var toolbar_toggle = document.querySelector('#toolbar_toggle'),
-                form = document.querySelector('form'),
+                form = document.querySelector('#contact_form'),
                 output = document.querySelector('#output_target'),
                 output_header = document.querySelector('#output_header'),
                 view_records = document.querySelector('#view_records'),
@@ -624,7 +624,7 @@
             }
         };
 
-        $lager.create(DB_NAME, DB_VERSION, DB_STORE_NAME);
+        $lager.createDB(DB_NAME, DB_VERSION, DB_STORE_NAME);
         manager = new stateManager();
 
         form.addEventListener('submit', function (event) {
@@ -654,7 +654,7 @@
                 }
             }
 
-            $lager.insert(DB_STORE_NAME, data);
+            $lager.insertRecord(DB_STORE_NAME, data);
 
         }, false);
 
@@ -672,13 +672,13 @@
             if (key !== '') {
                 switch (action) {
                     case 'get':
-                        $lager.getById(DB_STORE_NAME, key, function (record) {
+                        $lager.getRecordById(DB_STORE_NAME, key, function (record) {
                             output.appendChild(getRecordHtml(record));
                             output_header.innerHTML = 'Record: ' + key;
                         });
                         break;
                     case 'delete':
-                        $lager.deleteById(DB_STORE_NAME, key, function (message) {
+                        $lager.deleteRecordById(DB_STORE_NAME, key, function (message) {
                             output.innerHTML = message;
                             output_header.innerHTML = 'Record: ' + key;
                         });
@@ -692,8 +692,12 @@
             console.log('Clicked View All Records.');
             output.innerHTML = output_header.innerHTML = '';
 
-            $lager.getAll(DB_STORE_NAME, function (records) {
-                output.appendChild(getAllRecordsHtml(records));
+            $lager.getAllRecords(DB_STORE_NAME, function (records) {
+                if (records.length > 0) {
+                    output.appendChild(getAllRecordsHtml(records));
+                } else {
+                    output.innerHTML = 'There are no records.';
+                }
                 output_header.innerHTML = 'All Records';
             });
 
@@ -705,8 +709,8 @@
             console.log('Clicked Delete All Records.');
             output.innerHTML = output_header.innerHTML = '';
 
-            $lager.deleteAll(DB_STORE_NAME, function (records) {
-                output.appendChild(getAllRecordsHtml(records));
+            $lager.deleteAllRecords(DB_STORE_NAME, function (message) {
+                output.appendChild(getAllRecordsHtml(message));
                 output_header.innerHTML = 'All Records';
             });
 
