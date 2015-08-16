@@ -25,7 +25,7 @@
         }
 
         html {
-
+            height: 100%;
         }
 
         body {
@@ -34,22 +34,53 @@
             position: relative;
         }
 
-        #content {
-            width: 300px;
+        body.menu-open {
+            overflow: hidden;
+        }
+
+        #content_wrap {
+            width: auto;
+            min-width: 320px;
+            height: auto;
             margin: 0 auto;
+            overflow: hidden;
+            padding: 60px 0 0 0;
+        }
+
+        #content {
+            overflow: auto;
+            position: relative;
+            height: auto;
+            min-height: 100%;
+            margin: 0 10px;
+            top: 0;
+            left: 0;
+        }
+
+        body.menu-open #content {
+            left: 260px;
         }
 
         header {
             width: 100%;
+            height: 60px;
             overflow: auto;
-            position: relative;
+            position: fixed;
             border-bottom: rgb(160, 160, 160) 1px solid;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgb(240, 240, 240);
+            z-index: 1;
         }
 
         #header {
-            width: 300px;
+            width: auto;
+            height: 100%;
+            min-width: 320px;
+            padding: 0 10px;
             margin: 0 auto;
+        }
+
+        #header h1 {
+            text-align: right;
         }
 
         .arrow {
@@ -62,14 +93,13 @@
         }
 
         #toolbar_toggle {
-            margin: 10px 0;
+            margin: 14px 0 0 0;
             background: transparent;
             color: rgb(72, 72, 72);
             padding: 6px 24px 6px 12px;
             position: relative;
             cursor: pointer;
             width: auto;
-            float: none;
         }
 
         #toolbar_toggle .arrow {
@@ -84,17 +114,36 @@
             border-width: 0 4px 6px 4px;
         }
 
-        h1, h2 {
+        #toolbar {
+            width: 260px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: -260px;
+            background: rgb(43, 43, 43);
+            padding: 60px 10px 0 10px;
+        }
+
+        body.menu-open #toolbar {
+            left: 0;
+        }
+
+        h1, h2, h3 {
             font: 400 13px "Open Sans", sans-serif;
         }
 
         h1 {
+            font-size: 32px;
+            line-height: 56px;
+        }
+
+        h2 {
             font-size: 24px;
             line-height: 32px;
             margin: 0 0 13px 0;
         }
 
-        h2 {
+        h3 {
             font-size: 18px;
         }
 
@@ -186,7 +235,6 @@
         }
 
         form#key_form {
-            display: none;
             margin: 0;
         }
 
@@ -195,11 +243,6 @@
             background: transparent;
             margin: 0;
             padding: 12px 0;
-        }
-
-        form#key_form fieldset:first-child {
-            border-top: rgb(163, 163, 163) 1px dotted;
-            padding-top: 16px;
         }
 
         form#key_form input[type="text"],
@@ -238,20 +281,22 @@
         form#key_form select {
             background: transparent;
             padding: 7px 25px 6px 12px;
-            width: 125px;
+            width: 80px;
         }
 
         form#key_form input[type="submit"] {
-            margin: 0 0 0 29px;
+            margin: 0 0 0 14px;
             width: 80px;
         }
 
         input#view_records,
-        input#delete_records {
+        input#delete_records,
+        input#destroy_db {
             width: 100%;
         }
 
-        input#delete_records {
+        input#delete_records,
+        input#destroy_db {
             background: rgb(153, 11, 22);
             border-color: rgb(153, 11, 22);
             margin-bottom: 0;
@@ -414,15 +459,21 @@
 <body>
 <header>
     <div id="header">
-        <button id="toolbar_toggle">Toolbar <span class="arrow"></span></button>
+        <button id="toolbar_toggle">Toolbar</button>
+        <h1>Lager.js</h1>
+    </div>
+</header>
+<div id="content_wrap">
+
+    <div id="toolbar">
         <form action="" method="post" id="key_form">
             <fieldset>
                 <input type="text" id="key" value="" placeholder="Key"/>
                 <label for="select_action">
                     <span></span>
                     <select name="record_action" id="select_action">
-                        <option value="get">Get Record</option>
-                        <option value="delete">Delete Record</option>
+                        <option value="get">Get</option>
+                        <option value="delete">Delete</option>
                     </select>
                 </label>
                 <input type="submit" id="view_by_key" value="Submit"/>
@@ -430,76 +481,354 @@
             <fieldset>
                 <input type="button" id="view_records" value="View All Records"/>
                 <input type="button" id="delete_records" value="Delete All Records"/>
+                <input type="button" id="destroy_db" value="Destroy Database"/>
             </fieldset>
         </form>
     </div>
-</header>
-<div id="content">
-    <div id="output_wrap" class="page-state" data-state="output">
-        <input type="button" id="back" value="&#10094;"/>
 
-        <h1 id="output_header"></h1>
+    <div id="content">
+        <div id="output_wrap" class="page-state" data-state="output">
+            <input type="button" id="back" value="&#10094;"/>
 
-        <div id="output_target"></div>
-    </div>
+            <h2 id="output_header"></h2>
 
-    <form action="" method="post" id="contact_form" class="page-state default-state" data-state="form">
-        <h1>Registration Form</h1>
-        <input type="hidden" id="token" name="token" value="aWPW1234567Ika1230845tgECViHmTDoIJ">
-
-        <fieldset>
-            <legend>Personal Info</legend>
-
-            <label>Birth Date</label>
-            <input id="id_birth_month" name="birth_month" placeholder="MM" maxlength="2" type="text"/>
-            <input id="id_birth_day" name="birth_day" placeholder="DD" maxlength="2" type="text"/>
-            <input id="id_birth_year" name="birth_year" placeholder="YYYY" maxlength="4" type="text"/>
-
-
-            <label for="id_email">Email</label>
-            <input id="id_email" name="email" placeholder="Email" type="text"/>
-
-            <label for="id_phone_number">Phone Number</label>
-            <input id="id_phone_number" name="phone" placeholder="Phone Number" type="text"/>
-
-            <label for="id_postal_code">Postal Code</label>
-            <input id="id_postal_code" name="postal" placeholder="Postal Code" type="text"/>
-        </fieldset>
-
-        <fieldset>
-            <legend>Gender</legend>
-            <label for="gender_m" class="radio-label">
-                <input type="radio" name="gender" id="gender_m" value="M"/> Male
-            </label>
-
-            <label for="gender_f" class="radio-label">
-                <input type="radio" name="gender" id="gender_f" value="F"/> Female
-            </label>
-        </fieldset>
-
-        <fieldset>
-            <legend>Alerts</legend>
-            <label for="optin_email" class="checkbox-label">
-                <input type="checkbox" name="optin_email" id="optin_email" value="1" checked="checked"/> Sign up for
-                email
-                alerts
-            </label>
-
-            <label for="optin_phone" class="checkbox-label">
-                <input type="checkbox" name="optin_phone" id="optin_phone" value="1"/> Sign up for text alerts
-            </label>
-
-            <label for="optin_rewards" class="checkbox-label">
-                <input type="checkbox" name="optin_rewards" id="optin_rewards" value="1"/> Sign up for our rewards
-                program
-            </label>
-        </fieldset>
-
-        <div class="submitWrap">
-            <input type="submit" value="Submit"/>
+            <div id="output_target"></div>
         </div>
-    </form>
 
+        <form action="" method="post" id="contact_form" class="page-state default-state" data-state="form">
+            <h2>Registration Form</h2>
+            <input type="hidden" id="token" name="token" value="aWPW1234567Ika1230845tgECViHmTDoIJ">
+
+            <fieldset>
+                <legend>Personal Info</legend>
+
+                <label for="id_first_name">First Name</label>
+                <input id="id_first_name" name="first_name" placeholder="First Name" type="text"/>
+
+                <label for="id_last_name">Last Name</label>
+                <input id="id_last_name" name="last_name" placeholder="Last Name" type="text"/>
+
+                <label>Birth Date</label>
+                <input id="id_birth_month" name="birth_month" placeholder="MM" maxlength="2" type="text"/>
+                <input id="id_birth_day" name="birth_day" placeholder="DD" maxlength="2" type="text"/>
+                <input id="id_birth_year" name="birth_year" placeholder="YYYY" maxlength="4" type="text"/>
+
+
+                <label for="id_email">Email</label>
+                <input id="id_email" name="email" placeholder="Email" type="text"/>
+
+                <label for="id_phone_number">Phone Number</label>
+                <input id="id_phone_number" name="phone" placeholder="Phone Number" type="text"/>
+
+            </fieldset>
+
+            <fieldset>
+                <legend>Gender</legend>
+                <label for="gender_m" class="radio-label">
+                    <input type="radio" name="gender" id="gender_m" value="M"/> Male
+                </label>
+
+                <label for="gender_f" class="radio-label">
+                    <input type="radio" name="gender" id="gender_f" value="F"/> Female
+                </label>
+            </fieldset>
+
+            <fieldset>
+                <legend>Address</legend>
+
+                <label for="id_address_1">Address</label>
+                <input id="id_address_1" name="address_1" placeholder="Address" type="text"/>
+
+                <label for="id_address_2">Address Additional</label>
+                <input id="id_address_2" name="address_2" placeholder="Address Additional" type="text"/>
+
+                <label for="id_city">City</label>
+                <input id="id_city" name="city" placeholder="City" type="text"/>
+
+                <label for="id_state">State/Province</label>
+                <input id="id_state" name="state" placeholder="State/Province" type="text"/>
+
+                <label for="id_country">Country</label>
+                <select id="id_country" name="country">
+                    <option value="AF">Afghanistan</option>
+                    <option value="AX">Åland Islands</option>
+                    <option value="AL">Albania</option>
+                    <option value="DZ">Algeria</option>
+                    <option value="AS">American Samoa</option>
+                    <option value="AD">Andorra</option>
+                    <option value="AO">Angola</option>
+                    <option value="AI">Anguilla</option>
+                    <option value="AQ">Antarctica</option>
+                    <option value="AG">Antigua and Barbuda</option>
+                    <option value="AR">Argentina</option>
+                    <option value="AM">Armenia</option>
+                    <option value="AW">Aruba</option>
+                    <option value="AU">Australia</option>
+                    <option value="AT">Austria</option>
+                    <option value="AZ">Azerbaijan</option>
+                    <option value="BS">Bahamas</option>
+                    <option value="BH">Bahrain</option>
+                    <option value="BD">Bangladesh</option>
+                    <option value="BB">Barbados</option>
+                    <option value="BY">Belarus</option>
+                    <option value="BE">Belgium</option>
+                    <option value="BZ">Belize</option>
+                    <option value="BJ">Benin</option>
+                    <option value="BM">Bermuda</option>
+                    <option value="BT">Bhutan</option>
+                    <option value="BO">Bolivia, Plurinational State of</option>
+                    <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+                    <option value="BA">Bosnia and Herzegovina</option>
+                    <option value="BW">Botswana</option>
+                    <option value="BV">Bouvet Island</option>
+                    <option value="BR">Brazil</option>
+                    <option value="IO">British Indian Ocean Territory</option>
+                    <option value="BN">Brunei Darussalam</option>
+                    <option value="BG">Bulgaria</option>
+                    <option value="BF">Burkina Faso</option>
+                    <option value="BI">Burundi</option>
+                    <option value="KH">Cambodia</option>
+                    <option value="CM">Cameroon</option>
+                    <option value="CA">Canada</option>
+                    <option value="CV">Cape Verde</option>
+                    <option value="KY">Cayman Islands</option>
+                    <option value="CF">Central African Republic</option>
+                    <option value="TD">Chad</option>
+                    <option value="CL">Chile</option>
+                    <option value="CN">China</option>
+                    <option value="CX">Christmas Island</option>
+                    <option value="CC">Cocos (Keeling) Islands</option>
+                    <option value="CO">Colombia</option>
+                    <option value="KM">Comoros</option>
+                    <option value="CG">Congo</option>
+                    <option value="CD">Congo, the Democratic Republic of the</option>
+                    <option value="CK">Cook Islands</option>
+                    <option value="CR">Costa Rica</option>
+                    <option value="CI">Côte d'Ivoire</option>
+                    <option value="HR">Croatia</option>
+                    <option value="CU">Cuba</option>
+                    <option value="CW">Curaçao</option>
+                    <option value="CY">Cyprus</option>
+                    <option value="CZ">Czech Republic</option>
+                    <option value="DK">Denmark</option>
+                    <option value="DJ">Djibouti</option>
+                    <option value="DM">Dominica</option>
+                    <option value="DO">Dominican Republic</option>
+                    <option value="EC">Ecuador</option>
+                    <option value="EG">Egypt</option>
+                    <option value="SV">El Salvador</option>
+                    <option value="GQ">Equatorial Guinea</option>
+                    <option value="ER">Eritrea</option>
+                    <option value="EE">Estonia</option>
+                    <option value="ET">Ethiopia</option>
+                    <option value="FK">Falkland Islands (Malvinas)</option>
+                    <option value="FO">Faroe Islands</option>
+                    <option value="FJ">Fiji</option>
+                    <option value="FI">Finland</option>
+                    <option value="FR">France</option>
+                    <option value="GF">French Guiana</option>
+                    <option value="PF">French Polynesia</option>
+                    <option value="TF">French Southern Territories</option>
+                    <option value="GA">Gabon</option>
+                    <option value="GM">Gambia</option>
+                    <option value="GE">Georgia</option>
+                    <option value="DE">Germany</option>
+                    <option value="GH">Ghana</option>
+                    <option value="GI">Gibraltar</option>
+                    <option value="GR">Greece</option>
+                    <option value="GL">Greenland</option>
+                    <option value="GD">Grenada</option>
+                    <option value="GP">Guadeloupe</option>
+                    <option value="GU">Guam</option>
+                    <option value="GT">Guatemala</option>
+                    <option value="GG">Guernsey</option>
+                    <option value="GN">Guinea</option>
+                    <option value="GW">Guinea-Bissau</option>
+                    <option value="GY">Guyana</option>
+                    <option value="HT">Haiti</option>
+                    <option value="HM">Heard Island and McDonald Islands</option>
+                    <option value="VA">Holy See (Vatican City State)</option>
+                    <option value="HN">Honduras</option>
+                    <option value="HK">Hong Kong</option>
+                    <option value="HU">Hungary</option>
+                    <option value="IS">Iceland</option>
+                    <option value="IN">India</option>
+                    <option value="ID">Indonesia</option>
+                    <option value="IR">Iran, Islamic Republic of</option>
+                    <option value="IQ">Iraq</option>
+                    <option value="IE">Ireland</option>
+                    <option value="IM">Isle of Man</option>
+                    <option value="IL">Israel</option>
+                    <option value="IT">Italy</option>
+                    <option value="JM">Jamaica</option>
+                    <option value="JP">Japan</option>
+                    <option value="JE">Jersey</option>
+                    <option value="JO">Jordan</option>
+                    <option value="KZ">Kazakhstan</option>
+                    <option value="KE">Kenya</option>
+                    <option value="KI">Kiribati</option>
+                    <option value="KP">Korea, Democratic People's Republic of</option>
+                    <option value="KR">Korea, Republic of</option>
+                    <option value="KW">Kuwait</option>
+                    <option value="KG">Kyrgyzstan</option>
+                    <option value="LA">Lao People's Democratic Republic</option>
+                    <option value="LV">Latvia</option>
+                    <option value="LB">Lebanon</option>
+                    <option value="LS">Lesotho</option>
+                    <option value="LR">Liberia</option>
+                    <option value="LY">Libya</option>
+                    <option value="LI">Liechtenstein</option>
+                    <option value="LT">Lithuania</option>
+                    <option value="LU">Luxembourg</option>
+                    <option value="MO">Macao</option>
+                    <option value="MK">Macedonia, the former Yugoslav Republic of</option>
+                    <option value="MG">Madagascar</option>
+                    <option value="MW">Malawi</option>
+                    <option value="MY">Malaysia</option>
+                    <option value="MV">Maldives</option>
+                    <option value="ML">Mali</option>
+                    <option value="MT">Malta</option>
+                    <option value="MH">Marshall Islands</option>
+                    <option value="MQ">Martinique</option>
+                    <option value="MR">Mauritania</option>
+                    <option value="MU">Mauritius</option>
+                    <option value="YT">Mayotte</option>
+                    <option value="MX">Mexico</option>
+                    <option value="FM">Micronesia, Federated States of</option>
+                    <option value="MD">Moldova, Republic of</option>
+                    <option value="MC">Monaco</option>
+                    <option value="MN">Mongolia</option>
+                    <option value="ME">Montenegro</option>
+                    <option value="MS">Montserrat</option>
+                    <option value="MA">Morocco</option>
+                    <option value="MZ">Mozambique</option>
+                    <option value="MM">Myanmar</option>
+                    <option value="NA">Namibia</option>
+                    <option value="NR">Nauru</option>
+                    <option value="NP">Nepal</option>
+                    <option value="NL">Netherlands</option>
+                    <option value="NC">New Caledonia</option>
+                    <option value="NZ">New Zealand</option>
+                    <option value="NI">Nicaragua</option>
+                    <option value="NE">Niger</option>
+                    <option value="NG">Nigeria</option>
+                    <option value="NU">Niue</option>
+                    <option value="NF">Norfolk Island</option>
+                    <option value="MP">Northern Mariana Islands</option>
+                    <option value="NO">Norway</option>
+                    <option value="OM">Oman</option>
+                    <option value="PK">Pakistan</option>
+                    <option value="PW">Palau</option>
+                    <option value="PS">Palestinian Territory, Occupied</option>
+                    <option value="PA">Panama</option>
+                    <option value="PG">Papua New Guinea</option>
+                    <option value="PY">Paraguay</option>
+                    <option value="PE">Peru</option>
+                    <option value="PH">Philippines</option>
+                    <option value="PN">Pitcairn</option>
+                    <option value="PL">Poland</option>
+                    <option value="PT">Portugal</option>
+                    <option value="PR">Puerto Rico</option>
+                    <option value="QA">Qatar</option>
+                    <option value="RE">Réunion</option>
+                    <option value="RO">Romania</option>
+                    <option value="RU">Russian Federation</option>
+                    <option value="RW">Rwanda</option>
+                    <option value="BL">Saint Barthélemy</option>
+                    <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+                    <option value="KN">Saint Kitts and Nevis</option>
+                    <option value="LC">Saint Lucia</option>
+                    <option value="MF">Saint Martin (French part)</option>
+                    <option value="PM">Saint Pierre and Miquelon</option>
+                    <option value="VC">Saint Vincent and the Grenadines</option>
+                    <option value="WS">Samoa</option>
+                    <option value="SM">San Marino</option>
+                    <option value="ST">Sao Tome and Principe</option>
+                    <option value="SA">Saudi Arabia</option>
+                    <option value="SN">Senegal</option>
+                    <option value="RS">Serbia</option>
+                    <option value="SC">Seychelles</option>
+                    <option value="SL">Sierra Leone</option>
+                    <option value="SG">Singapore</option>
+                    <option value="SX">Sint Maarten (Dutch part)</option>
+                    <option value="SK">Slovakia</option>
+                    <option value="SI">Slovenia</option>
+                    <option value="SB">Solomon Islands</option>
+                    <option value="SO">Somalia</option>
+                    <option value="ZA">South Africa</option>
+                    <option value="GS">South Georgia and the South Sandwich Islands</option>
+                    <option value="SS">South Sudan</option>
+                    <option value="ES">Spain</option>
+                    <option value="LK">Sri Lanka</option>
+                    <option value="SD">Sudan</option>
+                    <option value="SR">Suriname</option>
+                    <option value="SJ">Svalbard and Jan Mayen</option>
+                    <option value="SZ">Swaziland</option>
+                    <option value="SE">Sweden</option>
+                    <option value="CH">Switzerland</option>
+                    <option value="SY">Syrian Arab Republic</option>
+                    <option value="TW">Taiwan, Province of China</option>
+                    <option value="TJ">Tajikistan</option>
+                    <option value="TZ">Tanzania, United Republic of</option>
+                    <option value="TH">Thailand</option>
+                    <option value="TL">Timor-Leste</option>
+                    <option value="TG">Togo</option>
+                    <option value="TK">Tokelau</option>
+                    <option value="TO">Tonga</option>
+                    <option value="TT">Trinidad and Tobago</option>
+                    <option value="TN">Tunisia</option>
+                    <option value="TR">Turkey</option>
+                    <option value="TM">Turkmenistan</option>
+                    <option value="TC">Turks and Caicos Islands</option>
+                    <option value="TV">Tuvalu</option>
+                    <option value="UG">Uganda</option>
+                    <option value="UA">Ukraine</option>
+                    <option value="AE">United Arab Emirates</option>
+                    <option value="GB">United Kingdom</option>
+                    <option value="US" selected="selected">United States</option>
+                    <option value="UM">United States Minor Outlying Islands</option>
+                    <option value="UY">Uruguay</option>
+                    <option value="UZ">Uzbekistan</option>
+                    <option value="VU">Vanuatu</option>
+                    <option value="VE">Venezuela, Bolivarian Republic of</option>
+                    <option value="VN">Viet Nam</option>
+                    <option value="VG">Virgin Islands, British</option>
+                    <option value="VI">Virgin Islands, U.S.</option>
+                    <option value="WF">Wallis and Futuna</option>
+                    <option value="EH">Western Sahara</option>
+                    <option value="YE">Yemen</option>
+                    <option value="ZM">Zambia</option>
+                    <option value="ZW">Zimbabwe</option>
+                </select>
+
+                <label for="id_postal_code">Postal Code</label>
+                <input id="id_postal_code" name="postal" placeholder="Postal Code" type="text"/>
+            </fieldset>
+
+            <fieldset>
+                <legend>Alerts</legend>
+                <label for="optin_email" class="checkbox-label">
+                    <input type="checkbox" name="optin_email" id="optin_email" value="1" checked="checked"/> Sign up for
+                    email
+                    alerts
+                </label>
+
+                <label for="optin_phone" class="checkbox-label">
+                    <input type="checkbox" name="optin_phone" id="optin_phone" value="1"/> Sign up for text alerts
+                </label>
+
+                <label for="optin_rewards" class="checkbox-label">
+                    <input type="checkbox" name="optin_rewards" id="optin_rewards" value="1"/> Sign up for our rewards
+                    program
+                </label>
+            </fieldset>
+
+            <div class="submitWrap">
+                <input type="submit" value="Submit"/>
+            </div>
+        </form>
+
+    </div>
 </div>
 
 <script type="text/javascript">
@@ -516,12 +845,15 @@
                 output_header = document.querySelector('#output_header'),
                 view_records = document.querySelector('#view_records'),
                 delete_records = document.querySelector('#delete_records'),
+                destroy_db = document.querySelector('#destroy_db'),
                 key_form = document.querySelector('#key_form'),
                 back = document.querySelector('#back'),
-                $lager = Object.create(Lager),
                 getAllRecordsHtml,
                 getRecordHtml,
+                hideToolbar,
+                showToolbar,
                 stateManager,
+                toCapFirst,
                 $state = null,
                 manager;
 
@@ -532,7 +864,7 @@
 
                 for (i = 0; i < records.length; i++) {
                     li = document.createElement('li');
-                    h2 = document.createElement('h2');
+                    h2 = document.createElement('h3');
 
                     h2.innerHTML = 'Email: ' + records[i].email;
 
@@ -574,6 +906,14 @@
             return ul;
         };
 
+        hideToolbar = function () {
+            return document.body.classList.remove('menu-open');
+        };
+
+        showToolbar = function () {
+            return document.body.classList.add('menu-open');
+        };
+
         stateManager = function () {
             if (undefined === this) {
                 console.error("stateManager must be created with the 'new' keyword.");
@@ -604,6 +944,7 @@
 
             this.setState = function (state) {
                 if (states.hasOwnProperty(state)) {
+                    hideToolbar();
                     if ($state !== null) {
                         hide(states[$state]);
                     }
@@ -624,10 +965,25 @@
             }
         };
 
-        $lager.createDB(DB_NAME, DB_VERSION, DB_STORE_NAME);
+        toCapFirst = function (string) {
+            var str_array = string.split(' '), i;
+
+            for (i = 0; i < str_array.length; i += 1) {
+                str_array[i] = str_array[i].charAt(0).toUpperCase() + str_array[i].slice(1);
+            }
+
+            return str_array.join(' ');
+        };
+
+        Lager.createDB(DB_NAME, DB_VERSION, DB_STORE_NAME, {
+            onSuccess: function () {
+                console.log(Lager.dbs);
+            }
+        });
         manager = new stateManager();
 
         form.addEventListener('submit', function (event) {
+            hideToolbar();
             event.preventDefault();
 
             var data = {}, i, type, selection;
@@ -654,17 +1010,18 @@
                 }
             }
 
-            $lager.insertRecord(DB_STORE_NAME, data);
+            Lager.insertRecord(DB_NAME, DB_STORE_NAME, data);
 
         }, false);
 
         key_form.addEventListener('submit', function (event) {
+            hideToolbar();
             event.preventDefault();
             console.log(this.key.value, this.record_action.value);
 
             var key = this.key.value,
                     action = this.record_action.value,
-                    action_string = action.charAt(0).toUpperCase() + action.slice(1);
+                    action_string = toCapFirst(action);
 
             console.log('Clicked ' + action_string + ' Record by Key.');
             output.innerHTML = output_header.innerHTML = '';
@@ -672,15 +1029,19 @@
             if (key !== '') {
                 switch (action) {
                     case 'get':
-                        $lager.getRecordById(DB_STORE_NAME, key, function (record) {
-                            output.appendChild(getRecordHtml(record));
-                            output_header.innerHTML = 'Record: ' + key;
+                        Lager.getRecordById(DB_NAME, DB_STORE_NAME, key, {
+                            onSuccess: function (record) {
+                                output.appendChild(getRecordHtml(record));
+                                output_header.innerHTML = 'Record: ' + key;
+                            }
                         });
                         break;
                     case 'delete':
-                        $lager.deleteRecordById(DB_STORE_NAME, key, function (message) {
-                            output.innerHTML = message;
-                            output_header.innerHTML = 'Record: ' + key;
+                        Lager.deleteRecordById(DB_NAME, DB_STORE_NAME, key, {
+                            onSuccess: function (message) {
+                                output.innerHTML = message;
+                                output_header.innerHTML = 'Record: ' + key;
+                            }
                         });
                         break;
                 }
@@ -690,28 +1051,53 @@
 
         view_records.addEventListener('click', function () {
             console.log('Clicked View All Records.');
+            hideToolbar();
             output.innerHTML = output_header.innerHTML = '';
 
-            $lager.getAllRecords(DB_STORE_NAME, function (records) {
-                if (records.length > 0) {
-                    output.appendChild(getAllRecordsHtml(records));
-                } else {
-                    output.innerHTML = 'There are no records.';
+            Lager.getAllRecords(DB_NAME, DB_STORE_NAME, {
+                onSuccess: function (records) {
+                    if (records.length > 0) {
+                        output.appendChild(getAllRecordsHtml(records));
+                    } else {
+                        output.innerHTML = 'There are no records.';
+                    }
+                },
+                onError: function (message) {
+                    output.innerHTML = message;
                 }
-                output_header.innerHTML = 'All Records';
             });
 
+            output_header.innerHTML = 'All Records';
             manager.setState('output');
 
         }, false);
 
         delete_records.addEventListener('click', function () {
             console.log('Clicked Delete All Records.');
+            hideToolbar();
             output.innerHTML = output_header.innerHTML = '';
 
-            $lager.deleteAllRecords(DB_STORE_NAME, function (message) {
-                output.appendChild(getAllRecordsHtml(message));
-                output_header.innerHTML = 'All Records';
+            Lager.deleteAllRecords(DB_NAME, DB_STORE_NAME, {
+                onSuccess: function (message) {
+                    output.appendChild(getAllRecordsHtml(message));
+                    output_header.innerHTML = 'All Records';
+                }
+            });
+
+            manager.setState('output');
+
+        }, false);
+
+        destroy_db.addEventListener('click', function () {
+            console.log('Clicked Destroy Database.');
+            hideToolbar();
+            output.innerHTML = output_header.innerHTML = '';
+
+            Lager.destroyDB(DB_NAME, DB_NAME, {
+                onSuccess: function (message) {
+                    output.innerHTML = message;
+                    output_header.innerHTML = 'Delete Database';
+                }
             });
 
             manager.setState('output');
@@ -719,16 +1105,17 @@
         }, false);
 
         toolbar_toggle.addEventListener('click', function () {
-            if (this.classList.contains('open')) {
-                this.classList.remove('open');
-                key_form.style.display = 'none';
+            window.scrollTo(0, 0);
+            if (document.body.classList.contains('menu-open')) {
+                hideToolbar();
             } else {
-                this.classList.add('open');
-                key_form.style.display = 'block';
+                window.scrollTo(0, 0);
+                showToolbar();
             }
         }, false);
 
         back.addEventListener('click', function () {
+            hideToolbar();
             manager.setState('form');
             output.innerHTML = '';
         }, false);

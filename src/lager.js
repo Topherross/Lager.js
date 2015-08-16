@@ -11,81 +11,178 @@
     var iDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
     //iDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction,
     //iDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange,
+        Logger,
+        $logger,
         Lager;
 
+    Logger = {
+        log: function (message) {
+            if (undefined !== window.console) {
+                window.console.log(message);
+            }
+
+            return this;
+        },
+
+        warn: function (message) {
+            if (undefined !== window.console) {
+                window.console.warn(message);
+            }
+
+            return this;
+        },
+
+        error: function (message) {
+            if (undefined !== window.console) {
+                window.console.error(message);
+            }
+
+            return this;
+        }
+    };
+
+    $logger = Object.create(Logger);
     Lager = {
-        db: null,
+        dbs: {},
 
-        createDB: function (database_name, database_version, store_name) {
-            window.console.log('Creating DB…');
-
-            var tx = iDB.open(database_name, parseInt(database_version, 10));
+        createDB: function (database_name, database_version, store_name, options) {
+            options = options || {};
+            var tx = iDB.open(database_name, parseInt(database_version, 10)),
+                message,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             tx.onsuccess = function (event) {
-                this.db = event.target.result;
-                window.console.log('DB Created!');
+                this.dbs[database_name] = event.target.result;
+                message = 'DB ' + database_name + '(Version ' + database_version + ') Created!';
+                $logger.log(message);
+
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess(message);
+                }
             }.bind(this);
 
             tx.onerror = function () {
-                window.console.error('Request Error:', this.errorCode);
+                message = 'Request Error:' + this.errorCode;
+                $logger.error(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
+                }
             };
 
-            tx.onupgradeneeded = function (event) {
-                window.console.log('Upgrade Needed');
-                event.target.result.createObjectStore(store_name, {keyPath: 'id', autoIncrement: true});
+            tx.onupgradeneeded = function () {
+                message = 'Upgrade Needed';
+                $logger.log(message);
+
+                this.result.createObjectStore(store_name, {keyPath: 'id', autoIncrement: true});
+                message = 'Store ' + store_name + ' successfully created!';
+                $logger.log(message);
+
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess(message);
+                }
             };
 
             return this;
         },
 
-        destroyDB: function (database_name) {
-            var tx = iDB.deleteDatabase(database_name);
+        destroyDB: function (database_name, options) {
+            options = options || {};
+            var tx = iDB.deleteDatabase(database_name),
+                message,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             tx.onsuccess = function () {
-                this.db = null;
-                window.console.log('Deleted database: ' + database_name + ' successfully');
+                delete this.dbs[database_name];
+                message = 'Deleted database: ' + database_name + ' successfully.';
+                $logger.log(message);
+
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess(message);
+                }
             }.bind(this);
 
             tx.onerror = function () {
-                window.console.error('Could not delete database: ' + database_name);
+                message = 'Could not delete database: ' + database_name + '.';
+                $logger.error(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
+                }
             };
 
             tx.onblocked = function () {
-                window.console.warn('Could not delete database: ' + database_name + ' due to the operation being blocked.');
+                message = 'Could not delete database: ' + database_name + ' due to the operation being blocked.';
+                $logger.warn(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
+                }
             };
 
             return this;
         },
 
-        insertRecord: function (store_name, data) {
-
-            var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
-                tx;
+        insertRecord: function (database_name, store_name, data, options) {
+            options = options || {};
+            var store = this.dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
+                message,
+                tx,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             try {
                 tx = store.add(data);
             } catch (e) {
                 if (e.name === 'DataCloneError') {
-                    window.console.error('This engine does not know how to clone a Blob.');
+                    message = 'This engine does not know how to clone a Blob.';
+                    $logger.error(message);
+
+                    if ($options.onError !== null && typeof $options.onError === 'function') {
+                        $options.onError(message);
+                    }
                 }
                 throw e;
             }
 
             tx.onsuccess = function () {
-                window.console.log('Insertion into ' + store_name + ' successful');
+                message = 'Insertion into ' + store_name + ' successful.';
+                $logger.log(message);
+
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess(message);
+                }
             };
 
             tx.onerror = function () {
-                window.console.error('Add Record Error: ', this.error);
+                message = 'Add Record Error: ' + this.error;
+                $logger.error(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
+                }
             };
 
             return this;
         },
 
-        getRecordById: function (store_name, key, callback) {
-            var store = this.db.transaction(store_name, 'readonly').objectStore(store_name),
+        getRecordById: function (database_name, store_name, key, options) {
+            options = options || {};
+            var store = this.dbs[database_name].transaction(store_name, 'readonly').objectStore(store_name),
                 tx = store.get(parseInt(key, 10)),
-                record;
+                record = null,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             tx.onsuccess = function () {
                 record = this.result;
@@ -94,115 +191,146 @@
                     record = 'Record: ' + key + ' not found.';
                 }
 
-                if (typeof callback === 'function') {
-                    callback(record);
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess(record);
                 }
             };
 
             tx.onerror = function () {
-                window.console.error('getByKey:', this.errorCode);
+                $logger.error('getByKey:' + this.errorCode);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(record);
+                }
             };
 
             return this;
         },
 
-        getAllRecords: function (store_name, callback) {
-            var store = this.db.transaction(store_name, 'readonly').objectStore(store_name),
+        getAllRecords: function (database_name, store_name, options) {
+            options = options || {};
+            var store = this.dbs[database_name].transaction(store_name, 'readonly').objectStore(store_name),
                 tx = store.openCursor(),
                 records = [],
-                cursor;
+                cursor,
+                message,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             tx.onsuccess = function () {
                 cursor = this.result;
 
                 if (!cursor) {
-                    if (typeof callback === 'function') {
-                        callback(records);
+                    message = 'Lookup complete!';
+                    if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                        $options.onSuccess(records, message);
                     }
                     return;
                 }
 
+                $logger.log('Cursor at ' + cursor.keyPath);
                 records.push(cursor.value);
                 cursor.continue();
             };
 
             tx.onerror = function () {
-                window.console.error('getAll:', this.errorCode);
+                message = 'getAll:' + this.errorCode;
+                $logger.error(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
+                }
             };
 
             return this;
         },
 
-        deleteAllRecords: function (store_name, callback) {
-            var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
+        deleteAllRecords: function (database_name, store_name, options) {
+            options = options || {};
+            var store = this.dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
                 tx = store.clear(),
-                message;
+                message,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             tx.onsuccess = function () {
                 message = 'All Records Deleted.';
-                window.console.log(message);
+                $logger.log(message);
 
-                if (typeof callback === 'function') {
-                    callback(message);
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess(message);
                 }
             };
 
             tx.onerror = function () {
-                message = 'deleteAll:'+ this.errorCode;
-                window.console.error(message);
+                message = 'deleteAll:' + this.errorCode;
+                $logger.error(message);
 
-                if (typeof callback === 'function') {
-                    callback(message);
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
                 }
             };
 
             return this;
         },
 
-        deleteRecordById: function (store_name, key, callback) {
-            var store = this.db.transaction(store_name, 'readwrite').objectStore(store_name),
+        deleteRecordById: function (database_name, store_name, key, options) {
+            options = options || {};
+            var store = this.dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
                 tx = store.get(parseInt(key, 10)),
                 message,
-                record;
+                record,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
 
             tx.onsuccess = function () {
                 record = this.result;
 
                 if (undefined === record) {
                     message = 'Record: ' + key + ' not found.';
+                    $logger.warn(message);
 
-                    if (typeof callback === 'function') {
-                        callback(message);
+                    if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                        $options.onSuccess(message);
                     }
                     return;
                 }
 
-                window.console.log('Record: ' + key + ' found.');
+                $logger.log('Record: ' + key + ' found.');
 
                 tx = store.delete(parseInt(key, 10));
 
                 tx.onsuccess = function () {
                     message = 'Record: ' + key + ' deleted.';
+                    $logger.log(message);
 
-                    if (typeof callback === 'function') {
-                        callback(message);
+                    if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                        $options.onSuccess(message);
                     }
                 };
 
                 tx.onerror = function () {
                     message = 'ERROR: deletePublication:' + this.errorCode;
+                    $logger.error(message);
 
-                    if (typeof callback === 'function') {
-                        callback(message);
+                    if ($options.onError !== null && typeof $options.onError === 'function') {
+                        $options.onError(message);
                     }
                 };
             };
 
             tx.onerror = function () {
                 message = 'ERROR: deleteById:' + this.errorCode;
+                $logger.error(message);
 
-                if (typeof callback === 'function') {
-                    callback(message);
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError(message);
                 }
             };
 
