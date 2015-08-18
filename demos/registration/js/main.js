@@ -2,8 +2,8 @@
     'use strict';
 
     //@TODO Change to const when ES6 becomes standard.
-    var DB_NAME = 'stash_entries',
-        DB_VERSION = 2,
+    var DB_NAME = 'registration_entries',
+        DB_VERSION = 1,
         DB_STORE_NAME = 'entries';
 
     var form = document.querySelector('#contact_form'),
@@ -269,25 +269,11 @@
         return str_array.join(' ');
     }
 
-    Lager.createDB('test_1', 1, 'test_1_store');
-    Lager.createDB('test_2', 1, 'test_2_store');
-    Lager.createDB('test_3', 1, 'test_3_store');
-    Lager.createDB('test_4', 1, 'test_4_store', {
+    Lager.createDB(DB_NAME, DB_VERSION, DB_STORE_NAME, {
         onSuccess: function () {
-//                Lager.createStore('test_4', 'test', {
-//                    indices: [
-//                        ['email', 'email', true, false],
-//                        ['first_name', 'first_name', false, false],
-//                        ['last_name', 'last_name', false, false]
-//                    ]
-//                });
-            Lager.createDB(DB_NAME, DB_VERSION, DB_STORE_NAME, {
-                onSuccess: function () {
-                    Lager.getAllDB(function (dbs) {
-                        dbs_content.innerHTML = '';
-                        dbs_content.appendChild(getDBHtml(dbs));
-                    });
-                }
+            Lager.getAllDB(function (dbs) {
+                dbs_content.innerHTML = '';
+                dbs_content.appendChild(getDBHtml(dbs));
             });
         }
     });
