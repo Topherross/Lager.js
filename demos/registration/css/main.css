@@ -1,0 +1,627 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*--- BOF ---*/
+
+* {
+    margin: 0;
+    padding: 0;
+    border: none 0;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    position: relative;
+    font: 400 14px "Arial", sans-serif;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background: rgb(60, 60, 60);
+    overflow: auto;
+    position: relative;
+}
+
+body.menu-open {
+    overflow: hidden;
+}
+
+#content_wrap {
+    width: auto;
+    min-width: 320px;
+    height: auto;
+    margin: 0 auto;
+    overflow: hidden;
+    padding: 60px 0 0 0;
+}
+
+#content {
+    overflow: auto;
+    position: relative;
+    height: auto;
+    min-height: 100%;
+    margin: 0 20px;
+    top: 0;
+    left: 0;
+}
+
+body.menu-open #content {
+    left: 260px;
+}
+
+header {
+    width: 100%;
+    height: 60px;
+    overflow: auto;
+    position: fixed;
+    border-bottom: rgb(160, 160, 160) 1px solid;
+    background: rgb(214, 214, 214);
+    z-index: 1;
+}
+
+#header {
+    width: auto;
+    height: 100%;
+    min-width: 320px;
+    padding: 0 20px;
+    margin: 0 auto;
+}
+
+#header h1 {
+    text-align: right;
+    color: rgb(236, 78, 141);
+}
+
+.arrow {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+#toolbar_toggle {
+    margin: 14px 0 0 0;
+    background: transparent;
+    color: rgb(72, 72, 72);
+    border-color: transparent;
+    padding: 6px 24px 6px 12px;
+    position: relative;
+    cursor: pointer;
+    width: auto;
+}
+
+#toolbar_toggle .arrow {
+    top: 12px;
+    right: 8px;
+    border-color: rgb(72, 72, 72) transparent transparent transparent;
+    border-width: 6px 4px 0 4px;
+}
+
+#toolbar_toggle.open .arrow {
+    border-color: transparent transparent rgb(72, 72, 72) transparent;
+    border-width: 0 4px 6px 4px;
+}
+
+#toolbar {
+    width: 260px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: -260px;
+    background: rgb(43, 43, 43);
+    padding: 60px 10px 0 10px;
+}
+
+body.menu-open #toolbar {
+    left: 0;
+}
+
+#toolbar input[type="text"],
+#toolbar select {
+    background: transparent;
+    border-color: rgb(120, 120, 120);
+}
+
+#toolbar input[type="text"]:focus {
+    color: rgb(231, 231, 231);
+}
+
+h1, h2, h3, h4 {
+    font: 300 13px "Open Sans", sans-serif;
+    color: rgb(220, 220, 220);
+}
+
+h1 {
+    font-size: 32px;
+    line-height: 56px;
+    color: rgb(60, 60, 60);
+}
+
+h2 {
+    font-size: 24px;
+    line-height: 32px;
+    margin: 0 0 37px 0;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+h4 {
+    font-size: 14px;
+}
+
+hr {
+    width: 100%;
+    height: 1px;
+    background: rgb(163, 163, 163);
+    box-sizing: border-box;
+    margin: 12px 0;
+}
+
+form {
+    overflow: auto;
+    position: relative;
+    margin: 20px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+fieldset {
+    overflow: auto;
+}
+
+input, select, textarea, button {
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+    float: left;
+    clear: left;
+    position: relative;
+    margin: 4px 0 10px;
+    padding: 6px 12px;
+    background: rgb(43, 43, 43);
+    border-radius: 3px;
+    box-sizing: border-box;
+    border: rgb(43, 43, 43) 1px solid;
+    font: 400 13px "Open Sans", sans-serif;
+    color: rgb(189, 189, 189);
+    width: 100%;
+}
+
+input[type="text"]:focus {
+    background: rgb(220, 220, 220);
+    border-color: rgb(220, 220, 220);
+    color: rgb(43, 43, 43);
+}
+
+label,
+legend {
+    float: left;
+    clear: left;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+label {
+    font: 400 16px "Open Sans Condensed", sans-serif;
+    color: rgb(189, 189, 189);
+}
+
+legend,
+#output_target ul li h2 {
+    padding: 0 0 14px 0;
+    margin: 0 0 20px 0;
+    border-bottom: rgb(163, 163, 163) 1px dotted;
+    font: 300 18px "Open Sans Condensed", sans-serif;
+    color: rgb(218, 218, 218);
+}
+
+input#id_birth_day,
+input#id_birth_month,
+input#id_birth_year {
+    text-align: center;
+}
+
+input#id_birth_day,
+input#id_birth_month {
+    width: 68px;
+    margin-right: 14px;
+}
+
+input#id_birth_day,
+input#id_birth_year {
+    clear: none;
+}
+
+input#id_birth_year {
+    width: 110px;
+}
+
+form#key_form {
+    margin: 0;
+}
+
+form#key_form fieldset {
+    border: none 0;
+    background: transparent;
+    margin: 0;
+    padding: 12px 0;
+}
+
+form#key_form input[type="text"],
+form#key_form select {
+    margin: 0;
+    width: auto;
+    clear: none;
+    padding: 7px 12px 6px;
+}
+
+form#key_form input[type="text"] {
+    width: 58px;
+}
+
+form#key_form label {
+    width: auto;
+    clear: none;
+    position: relative;
+    background: rgb(140, 140, 140);
+    border-radius: 3px;
+    margin-left: 8px;
+}
+
+form#key_form label > span {
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 10px;
+    top: 14px;
+    overflow: visible;
+    border-width: 6px 4px 0 4px;
+    border-color: rgb(255, 255, 255) transparent transparent transparent;
+    border-style: solid;
+}
+
+form#key_form select {
+    background: transparent;
+    padding: 7px 25px 6px 12px;
+    width: 80px;
+}
+
+form#key_form input[type="submit"] {
+    margin: 0 0 0 14px;
+    width: 80px;
+}
+
+input#view_records,
+input#delete_records,
+input#destroy_db {
+    width: 100%;
+}
+
+input#delete_records,
+input#destroy_db {
+    background: rgb(153, 11, 22);
+    border-color: rgb(153, 11, 22);
+    margin-bottom: 0;
+}
+
+input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    padding: 0;
+    margin-right: 6px;
+}
+
+input[type="radio"]:after {
+    content: '';
+    display: block;
+    margin: 4px;
+    width: 10px;
+    height: 10px;
+    background: transparent;
+    border-radius: 8px;
+}
+
+input[type="radio"]:checked,
+input[type="checkbox"]:checked {
+    background: rgb(50, 184, 210);
+    border-color: rgb(50, 184, 210);
+}
+
+input[type="radio"]:checked:after {
+    background: rgb(69, 69, 69);
+}
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin-right: 6px;
+}
+
+input[type="checkbox"]:after {
+    content: '';
+}
+
+input[type="checkbox"]:checked:after {
+    content: '\2713';
+    margin: 0 4px;
+    color: rgb(43, 43, 43);
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+    cursor: pointer;
+}
+
+input[type="button"],
+input[type="submit"] {
+    background: rgb(50, 184, 210);
+    color: rgb(43, 43, 43);
+    border-color: rgb(50, 184, 210);
+    font: 400 14px "Open Sans", sans-serif;
+    letter-spacing: 0.05em;;
+    width: auto;
+    float: none;
+    cursor: pointer;
+}
+
+.submitWrap {
+    overflow: auto;
+    clear: left;
+    text-align: right;
+}
+
+fieldset,
+#output_target {
+    box-sizing: border-box;
+    margin: 0 0 20px 0;
+}
+
+.radio-label,
+.checkbox-label {
+    margin: 6px 0;
+    cursor: pointer;
+    line-height: 28px;
+}
+
+.radio-label {
+    clear: none;
+    width: 50%;
+}
+
+#back {
+    float: left;
+    margin: 0 14px 0 0;
+}
+
+#output_wrap {
+    display: none;
+    margin: 20px 0;
+}
+
+#output_target ul li,
+#output_target ul li h2 {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+ul {
+    margin: 0;
+    list-style: none;
+    list-style-image: none;
+}
+
+#output_target > ul li > ul {
+    margin: 0 0 16px 0;
+}
+
+#output_target > ul li > ul:first-child {
+    margin: 0;
+}
+
+#output_target > ul li > ul li {
+    padding: 4px 0;
+}
+
+#output_target > ul li h2 {
+    padding: 8px 0;
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+#dbs_wrap {
+    overflow: auto;
+}
+
+#dbs_wrap ul li {
+    overflow: auto;
+    color: rgb(255, 255, 255);
+}
+
+#dbs_wrap ul li ul {
+    padding: 0 0 0 13px;
+    display: none;
+}
+
+#dbs_wrap ul li h4:last-child {
+    border: none 0;
+}
+
+#dbs_wrap button,
+button.icon-button {
+    float: right;
+    background: transparent;
+    color: rgb(255, 255, 255);
+    width: auto;
+    border: none 0;
+    padding: 0;
+    margin: 0 0 0 12px;
+    cursor: pointer;
+}
+
+#dbs_wrap button.add,
+button.icon-button.add {
+    color: rgb(49, 199, 140);
+}
+
+#dbs_wrap button.delete,
+button.icon-button.delete {
+    color: rgb(236, 78, 141);
+}
+
+#dbs_wrap button.view,
+button.icon-button.view {
+    color: rgb(50, 184, 210);
+}
+
+#dbs_wrap ul li h4 {
+    font-weight: 400;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: rgb(128, 128, 128) 1px solid;
+    color: rgb(219, 219, 219);
+    overflow: auto;
+}
+
+#dbs_wrap ul li h5 {
+    font-weight: 400;
+    font-size: 12px;
+    padding: 6px 0;
+    border-bottom: rgb(128, 128, 128) 1px solid;
+    color: rgb(219, 219, 219);
+    overflow: auto;
+}
+
+#dbs_wrap ul li h6 {
+    font-weight: 400;
+    font-size: 12px;
+    padding: 6px 0;
+    border-bottom: rgb(128, 128, 128) 1px solid;
+    color: rgb(219, 219, 219);
+    overflow: auto;
+}
+
+#dbs_wrap h3 button {
+    line-height: 2.1em;
+    font-size: 15px;
+}
+
+#dbs_wrap ul li h4 button {
+    line-height: 1.6em;
+    font-size: 13px;
+}
+
+#dbs_wrap ul li h5 button {
+    line-height: 1.6em;
+    font-size: 12px;
+}
+
+#dbs_wrap ul li h6 button {
+    line-height: 1.4em;
+    font-size: 12px;
+}
+
+#dbs_wrap ul li button.toggle {
+    float: left;
+    margin: 0;
+    padding: 0 0 0 12px;
+    color: rgb(50, 184, 210);
+}
+
+#dbs_wrap ul li button.toggle .arrow {
+    top: 7px;
+    left: 0;
+    border-color: transparent transparent transparent rgb(228, 228, 228);
+    border-width: 4px 0 4px 6px;
+}
+
+#dbs_wrap ul li button.toggle.open .arrow {
+    border-color: rgb(228, 228, 228) transparent transparent transparent;
+    border-width: 6px 4px 0 4px;
+}
+
+#dbs_wrap ul li.open > ul {
+    display: block;
+}
+
+#dbs_wrap ul li ul li.open > ul {
+    display: block;
+}
+
+#dbs_wrap h3 {
+    font: 300 20px "Open Sans Condensed", sans-serif;
+    color: rgb(255, 255, 255);
+    border-bottom: rgb(123, 123, 123) 1px dotted;
+    padding: 6px 0;
+    margin: 0 0 10px 0;
+    overflow: auto;
+}
+
+#dbs_content {
+    overflow: auto;
+}
+
+#dbs_add_wrap form {
+    overflow: auto;
+    margin: 0 0 10px 0;
+    padding: 10px 0 20px 0;
+    border-bottom: rgb(123, 123, 123) 1px dotted;
+}
+
+#dbs_add_wrap input[name="database"] {
+    margin: 0;
+}
+
+#dbs_add_wrap input[name="store"] {
+    margin: 10px 0 0 0;
+}
+
+#add_db_form_wrap button[type="submit"],
+#add_db_form_wrap button.cancel-add-db {
+    color: rgb(43, 43, 43);
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    padding: 7px 12px;
+    margin: 10px 0 0 0;
+    font-weight: 600;
+    text-align: center;
+    width: 48%;
+}
+
+#add_db_form_wrap button[type="submit"] {
+    background: rgb(50, 184, 210);
+}
+
+#add_db_form_wrap button.cancel-add-db {
+    background: rgb(236, 78, 141);
+    margin: 10px 0 0 4%;
+}
+
+@-moz-document url-prefix() {
+
+    form#key_form select {
+        padding: 6px 25px 6px 6px;
+    }
+
+    form#key_form input[type="text"] {
+        padding: 8px 12px;
+    }
+}
+
+/*--- EOF ---*/

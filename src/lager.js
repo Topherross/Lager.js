@@ -11,8 +11,9 @@
     var iDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB,
     //iDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction,
     //iDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange,
+        $dbs = {},
+        Storage,
         Logger,
-        $logger,
         Lager;
 
     Logger = {
@@ -41,9 +42,64 @@
         }
     };
 
-    $logger = Object.create(Logger);
+    Storage = {
+        getDbs: function (callback) {
+            if (undefined !== callback && typeof callback === 'function') {
+                callback($dbs);
+            }
+
+            return this;
+        },
+
+        setDbs: function (callback) {
+            var db, dbs = [], store, stores;
+
+            for (db in $dbs) {
+                if ($dbs.hasOwnProperty(db) && db !== 'length') {
+                    stores = [];
+                    if ($dbs[db].objectStoreNames.length > 0) {
+                        for (store in $dbs[db].objectStoreNames) {
+                            if ($dbs[db].objectStoreNames.hasOwnProperty(store) && store !== 'length') {
+                                stores.push($dbs[db].objectStoreNames[store]);
+                            }
+                        }
+
+                    }
+                    dbs.push({database: $dbs[db].name, version: $dbs[db].version, stores: stores});
+                }
+            }
+
+            localStorage.setItem('dbs', JSON.stringify(dbs));
+
+            if (undefined !== callback && typeof callback === 'function') {
+                callback(localStorage.getItem('dbs'));
+            }
+
+            return this;
+        }
+    };
+
     Lager = {
-        dbs: {},
+        getAllDB: function (callback) {
+            Storage.getDbs(function (dbs) {
+                if (undefined !== callback && typeof callback === 'function') {
+                    callback(dbs);
+                }
+            });
+
+            return this;
+        },
+
+        getDB: function (database_name, callback) {
+            Storage.getDbs(function (dbs) {
+                var db = dbs.hasOwnProperty(database_name) ? dbs[database_name] : null;
+                if (undefined !== callback && typeof callback === 'function') {
+                    callback(db);
+                }
+            });
+
+            return this;
+        },
 
         createDB: function (database_name, database_version, store_name, options) {
             options = options || {};
@@ -55,34 +111,39 @@
                 };
 
             tx.onsuccess = function (event) {
-                this.dbs[database_name] = event.target.result;
+                $dbs[database_name] = event.target.result;
+                Storage.setDbs();
                 message = 'DB ' + database_name + '(Version ' + database_version + ') Created!';
-                $logger.log(message);
+                Logger.log(message);
+
+                $dbs[database_name].onversionchange = function () {
+                    this.close();
+                };
 
                 if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                    $options.onSuccess(message);
+                    $options.onSuccess({database: database_name, store: store_name, message: message});
                 }
             }.bind(this);
 
             tx.onerror = function () {
                 message = 'Request Error:' + this.errorCode;
-                $logger.error(message);
+                Logger.error(message);
 
                 if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
+                    $options.onError({database: database_name, store: store_name, message: message});
                 }
             };
 
             tx.onupgradeneeded = function () {
                 message = 'Upgrade Needed';
-                $logger.log(message);
+                Logger.log(message);
 
                 this.result.createObjectStore(store_name, {keyPath: 'id', autoIncrement: true});
                 message = 'Store ' + store_name + ' successfully created!';
-                $logger.log(message);
+                Logger.log(message);
 
                 if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                    $options.onSuccess(message);
+                    $options.onSuccess({database: database_name, store: store_name, message: message});
                 }
             };
 
@@ -99,30 +160,31 @@
                 };
 
             tx.onsuccess = function () {
-                delete this.dbs[database_name];
+                delete $dbs[database_name];
+                Storage.setDbs();
                 message = 'Deleted database: ' + database_name + ' successfully.';
-                $logger.log(message);
+                Logger.log(message);
 
                 if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                    $options.onSuccess(message);
+                    $options.onSuccess({database: database_name, message: message});
                 }
             }.bind(this);
 
             tx.onerror = function () {
                 message = 'Could not delete database: ' + database_name + '.';
-                $logger.error(message);
+                Logger.error(message);
 
                 if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
+                    $options.onError({database: database_name, message: message});
                 }
             };
 
             tx.onblocked = function () {
                 message = 'Could not delete database: ' + database_name + ' due to the operation being blocked.';
-                $logger.warn(message);
+                Logger.warn(message);
 
                 if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
+                    $options.onError({database: database_name, message: message});
                 }
             };
 
@@ -131,7 +193,7 @@
 
         insertRecord: function (database_name, store_name, data, options) {
             options = options || {};
-            var store = this.dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
+            var store = $dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
                 message,
                 tx,
                 $options = {
@@ -144,10 +206,10 @@
             } catch (e) {
                 if (e.name === 'DataCloneError') {
                     message = 'This engine does not know how to clone a Blob.';
-                    $logger.error(message);
+                    Logger.error(message);
 
                     if ($options.onError !== null && typeof $options.onError === 'function') {
-                        $options.onError(message);
+                        $options.onError({database: database_name, store: store_name, message: message});
                     }
                 }
                 throw e;
@@ -155,19 +217,19 @@
 
             tx.onsuccess = function () {
                 message = 'Insertion into ' + store_name + ' successful.';
-                $logger.log(message);
+                Logger.log(message);
 
                 if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                    $options.onSuccess(message);
+                    $options.onSuccess({database: database_name, store: store_name, message: message});
                 }
             };
 
             tx.onerror = function () {
                 message = 'Add Record Error: ' + this.error;
-                $logger.error(message);
+                Logger.error(message);
 
                 if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
+                    $options.onError({database: database_name, store: store_name, message: message});
                 }
             };
 
@@ -176,7 +238,7 @@
 
         getRecordById: function (database_name, store_name, key, options) {
             options = options || {};
-            var store = this.dbs[database_name].transaction(store_name, 'readonly').objectStore(store_name),
+            var store = $dbs[database_name].transaction(store_name, 'readonly').objectStore(store_name),
                 tx = store.get(parseInt(key, 10)),
                 record = null,
                 $options = {
@@ -192,86 +254,15 @@
                 }
 
                 if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                    $options.onSuccess(record);
+                    $options.onSuccess({database: database_name, store: store_name, record: record});
                 }
             };
 
             tx.onerror = function () {
-                $logger.error('getByKey:' + this.errorCode);
+                Logger.error('getByKey:' + this.errorCode);
 
                 if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(record);
-                }
-            };
-
-            return this;
-        },
-
-        getAllRecords: function (database_name, store_name, options) {
-            options = options || {};
-            var store = this.dbs[database_name].transaction(store_name, 'readonly').objectStore(store_name),
-                tx = store.openCursor(),
-                records = [],
-                cursor,
-                message,
-                $options = {
-                    onSuccess: options.onSuccess || null,
-                    onError: options.onError || null
-                };
-
-            tx.onsuccess = function () {
-                cursor = this.result;
-
-                if (!cursor) {
-                    message = 'Lookup complete!';
-                    if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                        $options.onSuccess(records, message);
-                    }
-                    return;
-                }
-
-                $logger.log('Cursor at ' + cursor.keyPath);
-                records.push(cursor.value);
-                cursor.continue();
-            };
-
-            tx.onerror = function () {
-                message = 'getAll:' + this.errorCode;
-                $logger.error(message);
-
-                if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
-                }
-            };
-
-            return this;
-        },
-
-        deleteAllRecords: function (database_name, store_name, options) {
-            options = options || {};
-            var store = this.dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
-                tx = store.clear(),
-                message,
-                $options = {
-                    onSuccess: options.onSuccess || null,
-                    onError: options.onError || null
-                };
-
-            tx.onsuccess = function () {
-                message = 'All Records Deleted.';
-                $logger.log(message);
-
-                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                    $options.onSuccess(message);
-                }
-            };
-
-            tx.onerror = function () {
-                message = 'deleteAll:' + this.errorCode;
-                $logger.error(message);
-
-                if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
+                    $options.onError({database: database_name, store: store_name, record: record});
                 }
             };
 
@@ -280,7 +271,7 @@
 
         deleteRecordById: function (database_name, store_name, key, options) {
             options = options || {};
-            var store = this.dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
+            var store = $dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
                 tx = store.get(parseInt(key, 10)),
                 message,
                 record,
@@ -294,49 +285,143 @@
 
                 if (undefined === record) {
                     message = 'Record: ' + key + ' not found.';
-                    $logger.warn(message);
+                    Logger.warn(message);
 
                     if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                        $options.onSuccess(message);
+                        $options.onSuccess({database: database_name, store: store_name, message: message});
                     }
                     return;
                 }
 
-                $logger.log('Record: ' + key + ' found.');
+                Logger.log('Record: ' + key + ' found.');
 
                 tx = store.delete(parseInt(key, 10));
 
                 tx.onsuccess = function () {
                     message = 'Record: ' + key + ' deleted.';
-                    $logger.log(message);
+                    Logger.log(message);
 
                     if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
-                        $options.onSuccess(message);
+                        $options.onSuccess({database: database_name, store: store_name, message: message});
                     }
                 };
 
                 tx.onerror = function () {
                     message = 'ERROR: deletePublication:' + this.errorCode;
-                    $logger.error(message);
+                    Logger.error(message);
 
                     if ($options.onError !== null && typeof $options.onError === 'function') {
-                        $options.onError(message);
+                        $options.onError({database: database_name, store: store_name, message: message});
                     }
                 };
             };
 
             tx.onerror = function () {
                 message = 'ERROR: deleteById:' + this.errorCode;
-                $logger.error(message);
+                Logger.error(message);
 
                 if ($options.onError !== null && typeof $options.onError === 'function') {
-                    $options.onError(message);
+                    $options.onError({database: database_name, store: store_name, message: message});
+                }
+            };
+
+            return this;
+        },
+
+        getAllRecords: function (database_name, store_name, options) {
+            options = options || {};
+            var store = $dbs[database_name].transaction(store_name, 'readonly').objectStore(store_name),
+                tx = store.openCursor(),
+                records = [],
+                cursor,
+                message,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
+
+            tx.onsuccess = function () {
+                cursor = this.result;
+
+                if (undefined === cursor || !cursor) {
+                    message = 'Lookup complete!';
+                    if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                        $options.onSuccess({database: database_name, store: store_name, records: records, message: message});
+                    }
+                    return;
+                }
+
+                Logger.log('Cursor at ' + cursor.key);
+                records.push(cursor.value);
+                cursor.continue();
+            };
+
+            tx.onerror = function () {
+                message = 'getAll:' + this.errorCode;
+                Logger.error(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError({database: database_name, store: store_name, message: message});
+                }
+            };
+
+            return this;
+        },
+
+        deleteAllRecords: function (database_name, store_name, options) {
+            options = options || {};
+            var store = $dbs[database_name].transaction(store_name, 'readwrite').objectStore(store_name),
+                tx = store.clear(),
+                message,
+                $options = {
+                    onSuccess: options.onSuccess || null,
+                    onError: options.onError || null
+                };
+
+            tx.onsuccess = function () {
+                message = 'All Records Deleted.';
+                Logger.log(message);
+
+                if ($options.onSuccess !== null && typeof $options.onSuccess === 'function') {
+                    $options.onSuccess({database: database_name, store: store_name, message: message});
+                }
+            };
+
+            tx.onerror = function () {
+                message = 'deleteAll:' + this.errorCode;
+                Logger.error(message);
+
+                if ($options.onError !== null && typeof $options.onError === 'function') {
+                    $options.onError({database: database_name, store: store_name, message: message});
                 }
             };
 
             return this;
         }
     };
+
+    if (localStorage.getItem('dbs') === null) {
+        Storage.setDbs();
+    } else {
+        var db, dbs = JSON.parse(localStorage.getItem('dbs')), store, stores;
+
+        if (dbs !== null) {
+            for (db in dbs) {
+                if (dbs.hasOwnProperty(db) && db !== 'length' && !$dbs.hasOwnProperty(db)) {
+                    Lager.createDB(dbs[db].database, dbs[db].version, undefined === dbs[db].stores[0] ? dbs[db].database + '_store' : dbs[db].stores[0]);
+                    //if ($dbs[db].objectStoreNames.length > 0) {
+                    //    for (store in $dbs[db].objectStoreNames) {
+                    //        if ($dbs[db].objectStoreNames.hasOwnProperty(store) && store !== 'length') {
+                    //            stores.push($dbs[db].objectStoreNames[store]);
+                    //        }
+                    //    }
+                    //
+                    //}
+                    //dbs.push({database: db, stores: stores});
+                }
+            }
+        }
+    }
 
     if (typeof module === 'object' && typeof module.exports === 'object') {
         module.exports = Lager;
